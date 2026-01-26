@@ -1,10 +1,19 @@
+#!/usr/bin/env python3
+"""
+Telegram Web App Bot - Word Magic
+A beautiful web app bot with random word and sentence generation.
+"""
+
 import os
 import logging
 import random
 from flask import Flask, render_template, request, jsonify
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import Application, CommandHandler, ContextTypes
-import asyncio
+import nest_asyncio
+
+# Apply nest_asyncio to allow nested event loops
+nest_asyncio.apply()
 
 # Configure logging
 logging.basicConfig(
@@ -13,18 +22,19 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Suppress httpx logs
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
 # Get environment variables
 TOKEN = os.getenv("TOKEN")
 if not TOKEN:
-    raise ValueError("TOKEN environment variable is empty")
+    raise ValueError("❌ TOKEN environment variable is required")
 
 WEBAPP_URL = os.getenv("URL")
 if not WEBAPP_URL:
-    raise ValueError("URL environment variable is empty")
+    raise ValueError("❌ URL environment variable is required")
 
-WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET")
-if not WEBHOOK_SECRET:
-    raise ValueError("WEBHOOK_SECRET environment variable is empty")
+WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET", "default_secret_change_me")
 
 # Load word list
 def load_words():
@@ -32,46 +42,58 @@ def load_words():
     try:
         with open('words.txt', 'r') as f:
             words = [line.strip() for line in f if line.strip()]
-            logger.info(f"Loaded {len(words)} words from words.txt")
+            logger.info(f"✅ Loaded {len(words)} words from words.txt")
             return words
     except FileNotFoundError:
-        logger.warning("words.txt not found, using default words")
-        return ["amazing", "wonderful", "fantastic", "incredible", "awesome"]
+        logger.warning("⚠️ words.txt not found, using default words")
+        return ["amazing", "wonderful", "fantastic", "incredible", "awesome", 
+                "brilliant", "creative", "delightful", "energetic", "graceful"]
 
 WORD_LIST = load_words()
 
 # Create Flask app
 app = Flask(__name__)
+app.config['JSON_SORT_KEYS'] = False
 
-# Create bot application
-bot_app = Application.builder().token(TOKEN).build()
+# Global bot application
+bot_app = None
 
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle the /start command."""
-    bot_username = (await context.bot.get_me()).username
-    logger.info(f"Received /start command from user {update.effective_user.id}")
-    
-    keyboard = [[
-        InlineKeyboardButton(
-            "🚀 Open Web App",
-            web_app=WebAppInfo(url=WEBAPP_URL)
+    try:
+        user = update.effective_user
+        bot_info = await context.bot.get_me()
+        
+        keyboard = [[
+            InlineKeyboardButton(
+                "🚀 Open Web App",
+                web_app=WebAppInfo(url=WEBAPP_URL)
+            )
+        ]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        message = (
+            f"👋 Hello {user.first_name}!\n\n"
+            f"I'm @{bot_info.username}, your Word Magic companion! ✨\n\n"
+            f"Click the button below to explore random words and "
+            f"generate inspiring sentences!\n\n"
+            f"Let the magic begin! 🎯"
         )
-    ]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await update.message.reply_text(
-        f"👋 Hello, I'm @{bot_username}!\n\n"
-        f"Welcome to the Word Magic Web App! ✨\n"
-        f"Click the button below to experience something special!",
-        reply_markup=reply_markup
-    )
+        
+        await update.message.reply_text(message, reply_markup=reply_markup)
+        logger.info(f"✅ /start command sent to {user.first_name} (ID: {user.id})")
+        
+    except Exception as e:
+        logger.error(f"❌ Error in start command: {e}", exc_info=True)
 
+
+# Flask Routes
 
 @app.route('/')
 def index():
-    """Serve the index page."""
-    logger.info("Serving index page")
+    """Serve the main web app page."""
+    logger.info("📱 Web app accessed")
     return render_template('index.html', webapp_url=WEBAPP_URL)
 
 
@@ -83,152 +105,169 @@ def health():
 
 @app.route('/validate')
 def validate():
-    """Validate the webapp data."""
+    """Validate Telegram WebApp data."""
     from validation import validate_webapp_data
     
-    # Get the initData from X-Auth header
     init_data = request.headers.get('X-Auth')
     if not init_data:
-        logger.warning("Validation attempt without X-Auth header")
+        logger.warning("❌ Validation failed: Missing X-Auth header")
         return jsonify({"error": "Missing authentication"}), 400
     
-    # Validate the data
     try:
         user_data = validate_webapp_data(init_data, TOKEN)
-        logger.info(f"User {user_data['id']} ({user_data['first_name']}) authenticated successfully")
+        logger.info(f"✅ User authenticated: {user_data.get('first_name')} (ID: {user_data.get('id')})")
         return jsonify({
             "success": True,
             "user": user_data
         })
     except Exception as e:
-        logger.error(f"Validation failed: {str(e)}")
+        logger.error(f"❌ Validation error: {e}")
         return jsonify({"error": str(e)}), 401
 
 
 @app.route('/random-word')
-def random_word():
+def get_random_word():
     """Get a random word from the word list."""
+    from validation import validate_webapp_data
+    
     init_data = request.headers.get('X-Auth')
     if not init_data:
         return jsonify({"error": "Missing authentication"}), 400
     
     try:
-        from validation import validate_webapp_data
-        user_data = validate_webapp_data(init_data, TOKEN)
-        
+        validate_webapp_data(init_data, TOKEN)
         word = random.choice(WORD_LIST)
-        logger.info(f"User {user_data['id']} generated word: {word}")
+        logger.info(f"🎲 Random word generated: {word}")
         return jsonify({"word": word})
     except Exception as e:
-        logger.error(f"Random word error: {str(e)}")
+        logger.error(f"❌ Random word error: {e}")
         return jsonify({"error": str(e)}), 401
 
 
 @app.route('/random-sentence')
-def random_sentence():
+def get_random_sentence():
     """Generate a random sentence using words from the word list."""
+    from validation import validate_webapp_data
+    
     init_data = request.headers.get('X-Auth')
     if not init_data:
         return jsonify({"error": "Missing authentication"}), 400
     
     try:
-        from validation import validate_webapp_data
         user_data = validate_webapp_data(init_data, TOKEN)
+        first_name = user_data.get('first_name', 'friend')
         
-        # Generate random sentence
+        # Sentence templates
         templates = [
-            f"You are truly {random.choice(WORD_LIST)}, {user_data['first_name']}!",
-            f"Today feels {random.choice(WORD_LIST)} and {random.choice(WORD_LIST)}!",
-            f"Your {random.choice(WORD_LIST)} spirit makes the world {random.choice(WORD_LIST)}!",
-            f"Stay {random.choice(WORD_LIST)}, stay {random.choice(WORD_LIST)}!",
-            f"{user_data['first_name']}, you're absolutely {random.choice(WORD_LIST)}!",
+            f"You are truly {random.choice(WORD_LIST)}, {first_name}! 🌟",
+            f"Today feels {random.choice(WORD_LIST)} and {random.choice(WORD_LIST)}! ✨",
+            f"Your {random.choice(WORD_LIST)} spirit makes the world {random.choice(WORD_LIST)}! 🌈",
+            f"Stay {random.choice(WORD_LIST)}, stay {random.choice(WORD_LIST)}! 💪",
+            f"{first_name}, you're absolutely {random.choice(WORD_LIST)}! 🎯",
+            f"Keep being {random.choice(WORD_LIST)}, {first_name}! You inspire others! 🚀",
+            f"Your {random.choice(WORD_LIST)} energy is {random.choice(WORD_LIST)}! ⚡",
         ]
         
         sentence = random.choice(templates)
-        logger.info(f"User {user_data['id']} generated sentence")
+        logger.info(f"💬 Sentence generated for {first_name}")
         return jsonify({"sentence": sentence})
     except Exception as e:
-        logger.error(f"Random sentence error: {str(e)}")
+        logger.error(f"❌ Random sentence error: {e}")
         return jsonify({"error": str(e)}), 401
 
 
-@app.route(f'/bots/{TOKEN}', methods=['POST'])
-async def webhook():
+@app.route(f'/webhook/{TOKEN}', methods=['POST'])
+def webhook_handler():
     """Handle incoming webhook updates from Telegram."""
-    logger.info("Received webhook request")
-    
-    # Verify secret token
     secret_token = request.headers.get('X-Telegram-Bot-Api-Secret-Token')
+    
     if secret_token != WEBHOOK_SECRET:
-        logger.warning("Webhook request with invalid secret token")
+        logger.warning("❌ Unauthorized webhook attempt")
         return "Unauthorized", 401
     
-    # Process update
     try:
-        update = Update.de_json(request.get_json(force=True), bot_app.bot)
-        logger.info(f"Processing update: {update.update_id}")
-        await bot_app.process_update(update)
-        return "OK"
+        import asyncio
+        update_data = request.get_json(force=True)
+        update = Update.de_json(update_data, bot_app.bot)
+        
+        # Process update synchronously in the context of the running event loop
+        asyncio.run(bot_app.process_update(update))
+        
+        return "OK", 200
     except Exception as e:
-        logger.error(f"Error processing webhook: {str(e)}")
+        logger.error(f"❌ Webhook processing error: {e}", exc_info=True)
         return "Error", 500
 
 
-async def setup_webhook():
-    """Set up the webhook."""
-    webhook_url = f"{WEBAPP_URL}/bots/{TOKEN}"
-    try:
+def setup_bot():
+    """Initialize the Telegram bot."""
+    global bot_app
+    
+    import asyncio
+    
+    logger.info("🤖 Initializing Telegram bot...")
+    
+    # Create application
+    bot_app = Application.builder().token(TOKEN).build()
+    
+    # Add command handlers
+    bot_app.add_handler(CommandHandler("start", start_command))
+    
+    # Initialize and setup webhook
+    async def init_bot():
+        await bot_app.initialize()
+        await bot_app.start()
+        
+        # Set webhook
+        webhook_url = f"{WEBAPP_URL}/webhook/{TOKEN}"
         await bot_app.bot.set_webhook(
             url=webhook_url,
             max_connections=100,
             drop_pending_updates=True,
-            secret_token=WEBHOOK_SECRET
+            secret_token=WEBHOOK_SECRET,
+            allowed_updates=["message", "callback_query"]
         )
-        logger.info(f"✅ Webhook successfully set to: {webhook_url}")
         
-        # Verify webhook
-        webhook_info = await bot_app.bot.get_webhook_info()
-        logger.info(f"📡 Webhook info: URL={webhook_info.url}, pending_updates={webhook_info.pending_update_count}")
-    except Exception as e:
-        logger.error(f"❌ Failed to set webhook: {str(e)}")
-        raise
+        # Get bot info
+        bot_info = await bot_app.bot.get_me()
+        
+        logger.info("=" * 60)
+        logger.info(f"✅ Bot successfully started!")
+        logger.info(f"🤖 Bot Username: @{bot_info.username}")
+        logger.info(f"🆔 Bot ID: {bot_info.id}")
+        logger.info(f"📡 Webhook URL: {webhook_url}")
+        logger.info(f"🌐 Web App URL: {WEBAPP_URL}")
+        logger.info(f"📚 Words loaded: {len(WORD_LIST)}")
+        logger.info("=" * 60)
+    
+    # Run initialization
+    asyncio.run(init_bot())
+    logger.info("✅ Bot initialization complete")
 
 
 def main():
-    """Start the bot."""
-    logger.info("=" * 60)
-    logger.info("🚀 Starting Word Magic Telegram Web App Bot")
-    logger.info("=" * 60)
-    
-    # Add handlers
-    bot_app.add_handler(CommandHandler("start", start))
-    logger.info("✅ Added /start command handler")
-    
-    # Initialize the bot application
-    asyncio.run(bot_app.initialize())
-    asyncio.run(bot_app.start())
-    logger.info("✅ Bot application initialized")
-    
-    # Set up webhook
-    asyncio.run(setup_webhook())
-    
-    # Get bot info
-    bot_me = asyncio.run(bot_app.bot.get_me())
-    bot_username = bot_me.username
-    bot_name = bot_me.first_name
-    
-    logger.info("=" * 60)
-    logger.info(f"🤖 Bot Name: {bot_name}")
-    logger.info(f"📝 Bot Username: @{bot_username}")
-    logger.info(f"🌐 Web App URL: {WEBAPP_URL}")
-    logger.info(f"📍 Webhook URL: {WEBAPP_URL}/bots/[TOKEN]")
-    logger.info("=" * 60)
-    logger.info("✅ Bot is ready! Send /start to your bot in Telegram")
-    logger.info("🌐 Starting Flask server on http://0.0.0.0:8080")
-    logger.info("=" * 60)
-    
-    # Start Flask server
-    app.run(host='0.0.0.0', port=8080)
+    """Main entry point."""
+    try:
+        logger.info("🚀 Starting Word Magic Bot...")
+        logger.info(f"📍 Web App URL: {WEBAPP_URL}")
+        
+        # Setup bot
+        setup_bot()
+        
+        # Start Flask server
+        logger.info("🌐 Starting Flask web server on port 8080...")
+        app.run(
+            host='0.0.0.0',
+            port=8080,
+            debug=False,
+            use_reloader=False
+        )
+        
+    except KeyboardInterrupt:
+        logger.info("⏹️ Shutting down gracefully...")
+    except Exception as e:
+        logger.error(f"❌ Fatal error: {e}", exc_info=True)
+        raise
 
 
 if __name__ == '__main__':
