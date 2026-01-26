@@ -1,5 +1,6 @@
 import os
 import logging
+import random
 from flask import Flask, render_template, request, jsonify
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import Application, CommandHandler, ContextTypes
@@ -25,6 +26,17 @@ WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET")
 if not WEBHOOK_SECRET:
     raise ValueError("WEBHOOK_SECRET environment variable is empty")
 
+# Load word list
+def load_words():
+    """Load words from words.txt file."""
+    try:
+        with open('words.txt', 'r') as f:
+            return [line.strip() for line in f if line.strip()]
+    except FileNotFoundError:
+        return ["amazing", "wonderful", "fantastic", "incredible", "awesome"]
+
+WORD_LIST = load_words()
+
 # Create Flask app
 app = Flask(__name__)
 
@@ -38,15 +50,16 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     
     keyboard = [[
         InlineKeyboardButton(
-            "Press me",
+            "🚀 Open Web App",
             web_app=WebAppInfo(url=WEBAPP_URL)
         )
     ]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await update.message.reply_text(
-        f"Hello, I'm @{bot_username}.\n"
-        f"You can use me to run a (very) simple telegram webapp demo!",
+        f"👋 Hello, I'm @{bot_username}!\n\n"
+        f"Welcome to the Word Magic Web App! ✨\n"
+        f"Click the button below to experience something special!",
         reply_markup=reply_markup
     )
 
@@ -65,14 +78,60 @@ def validate():
     # Get the initData from X-Auth header
     init_data = request.headers.get('X-Auth')
     if not init_data:
-        return "validation failed; missing X-Auth header", 400
+        return jsonify({"error": "Missing authentication"}), 400
     
     # Validate the data
     try:
         user_data = validate_webapp_data(init_data, TOKEN)
-        return f"validation success; user '{user_data['first_name']}' is authenticated (id: {user_data['id']})."
+        return jsonify({
+            "success": True,
+            "user": user_data
+        })
     except Exception as e:
-        return f"validation failed; error: {str(e)}", 401
+        return jsonify({"error": str(e)}), 401
+
+
+@app.route('/random-word')
+def random_word():
+    """Get a random word from the word list."""
+    init_data = request.headers.get('X-Auth')
+    if not init_data:
+        return jsonify({"error": "Missing authentication"}), 400
+    
+    try:
+        from validation import validate_webapp_data
+        validate_webapp_data(init_data, TOKEN)
+        
+        word = random.choice(WORD_LIST)
+        return jsonify({"word": word})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 401
+
+
+@app.route('/random-sentence')
+def random_sentence():
+    """Generate a random sentence using words from the word list."""
+    init_data = request.headers.get('X-Auth')
+    if not init_data:
+        return jsonify({"error": "Missing authentication"}), 400
+    
+    try:
+        from validation import validate_webapp_data
+        user_data = validate_webapp_data(init_data, TOKEN)
+        
+        # Generate random sentence
+        templates = [
+            f"You are truly {random.choice(WORD_LIST)}, {user_data['first_name']}!",
+            f"Today feels {random.choice(WORD_LIST)} and {random.choice(WORD_LIST)}!",
+            f"Your {random.choice(WORD_LIST)} spirit makes the world {random.choice(WORD_LIST)}!",
+            f"Stay {random.choice(WORD_LIST)}, stay {random.choice(WORD_LIST)}!",
+            f"{user_data['first_name']}, you're absolutely {random.choice(WORD_LIST)}!",
+        ]
+        
+        sentence = random.choice(templates)
+        return jsonify({"sentence": sentence})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 401
 
 
 @app.route(f'/bots/{TOKEN}', methods=['POST'])

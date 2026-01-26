@@ -16,7 +16,7 @@ def validate_webapp_data(init_data: str, bot_token: str) -> dict:
         dict: The user data if validation succeeds
         
     Raises:
-        ValueError: If validation codeimportnDownloadCopy
+        ValueError: If validation fails
     """
     try:
         # Parse the init_data
@@ -64,4 +64,3 @@ def validate_webapp_data(init_data: str, bot_token: str) -> dict:
         
     except Exception as e:
         raise ValueError(f"Validation error: {str(e)}")
-      
