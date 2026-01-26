@@ -2,44 +2,409 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Telegram webapp</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Magic ✨</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header .emoji {
+            font-size: 3em;
+            display: block;
+            margin-bottom: 15px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .user-card {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .user-card h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 1.1em;
+        }
+
+        .user-info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-info-item .icon {
+            font-size: 1.2em;
+        }
+
+        .status {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .status.success {
+            background: rgba(72, 187, 120, 0.3);
+            border-color: rgba(72, 187, 120, 0.5);
+        }
+
+        .status.loading {
+            background: rgba(237, 137, 54, 0.3);
+            border-color: rgba(237, 137, 54, 0.5);
+        }
+
+        .word-section {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        .word-display {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 20px 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: capitalize;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .sentence-display {
+            font-size: 1.3em;
+            line-height: 1.6;
+            margin: 20px 0;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .button {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.6);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button.secondary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .button.secondary:hover {
+            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
+        }
+
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .greeting {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #333;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(252, 182, 159, 0.4);
+        }
+    </style>
 </head>
 <body>
-<div id="main">
-    Hey there :)
-    This is a VERY basic example of a webapp.
+    <div class="container">
+        <div class="header">
+            <span class="emoji">✨</span>
+            <h1>Word Magic</h1>
+        </div>
 
-    <br/>
-    All it does is read the info from telegram, and validate it.
+        <div id="greeting" class="greeting" style="display: none;">
+            Hello, <span id="greetingName"></span>! 👋
+        </div>
 
-    <br/>
-    <p id="name"></p>
-    <br/>
-    <p id="id"></p>
-    <br/>
-    <p id="valid">unchecked</p>
-</div>
+        <div class="user-card">
+            <h2>📋 Your Info</h2>
+            <div class="user-info">
+                <div class="user-info-item">
+                    <span class="icon">👤</span>
+                    <span id="userName">Loading...</span>
+                </div>
+                <div class="user-info-item">
+                    <span class="icon">🔢</span>
+                    <span>ID: <span id="userId">...</span></span>
+                </div>
+                <div class="user-info-item" id="usernameItem" style="display: none;">
+                    <span class="icon">@</span>
+                    <span id="userUsername">...</span>
+                </div>
+            </div>
+        </div>
 
-<script>
-    Telegram.WebApp.ready()
+        <div id="status" class="status loading">
+            <span class="loading"></span> Validating...
+        </div>
 
-    // The frontend is OK displaying "unsafe" data, as long as we only use it for display reasons, and not as input.
-    document.getElementById("name").innerHTML = "your name is: " + Telegram.WebApp.initDataUnsafe.user.first_name
-    document.getElementById("id").innerHTML = "your id is: " + Telegram.WebApp.initDataUnsafe.user.id
+        <div class="word-section">
+            <h3>🎲 Random Word</h3>
+            <div id="wordDisplay" class="word-display">Click the button below!</div>
+            <button id="randomWordBtn" class="button" onclick="getRandomWord()" disabled>
+                Generate Word
+            </button>
+        </div>
 
-    // For any input, we must always pass the initData string, which will be validated by the backend.
-    fetch("{{ webapp_url }}/validate", {
-        headers: {
-            "X-Auth": Telegram.WebApp.initData
+        <div class="word-section">
+            <h3>💬 Magic Sentence</h3>
+            <div id="sentenceDisplay" class="sentence-display">Get inspired!</div>
+            <button id="randomSentenceBtn" class="button secondary" onclick="getRandomSentence()" disabled>
+                Generate Sentence
+            </button>
+        </div>
+
+        <div class="footer">
+            Made with ❤️ using Telegram Web Apps
+        </div>
+    </div>
+
+    <script>
+        let isAuthenticated = false;
+        
+        // Initialize Telegram WebApp
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
+
+        // Set theme colors
+        const themeParams = Telegram.WebApp.themeParams;
+        
+        // Display user info from Telegram (unsafe - just for display)
+        const user = Telegram.WebApp.initDataUnsafe.user;
+        if (user) {
+            document.getElementById("userName").textContent = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+            document.getElementById("userId").textContent = user.id;
+            document.getElementById("greetingName").textContent = user.first_name;
+            document.getElementById("greeting").style.display = "block";
+            
+            if (user.username) {
+                document.getElementById("userUsername").textContent = '@' + user.username;
+                document.getElementById("usernameItem").style.display = "flex";
+            }
         }
-    }).then(function (response) {
-        return response.text();
-    }).then(function (text) {
-        document.getElementById("valid").innerHTML = "result: " + text;
-    }).catch(function () {
-        console.log("Booo");
-    });
-</script>
+
+        // Validate with backend
+        fetch("{{ webapp_url }}/validate", {
+            headers: {
+                "X-Auth": Telegram.WebApp.initData
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                isAuthenticated = true;
+                document.getElementById("status").textContent = "✅ Authenticated Successfully!";
+                document.getElementById("status").classList.remove("loading");
+                document.getElementById("status").classList.add("success");
+                
+                // Enable buttons
+                document.getElementById("randomWordBtn").disabled = false;
+                document.getElementById("randomSentenceBtn").disabled = false;
+            } else {
+                throw new Error(data.error || "Authentication failed");
+            }
+        })
+        .catch(error => {
+            document.getElementById("status").textContent = "❌ Authentication failed: " + error.message;
+            document.getElementById("status").classList.remove("loading");
+            console.error("Validation error:", error);
+        });
+
+        function getRandomWord() {
+            if (!isAuthenticated) return;
+            
+            const btn = document.getElementById("randomWordBtn");
+            const display = document.getElementById("wordDisplay");
+            
+            btn.disabled = true;
+            display.innerHTML = '<span class="loading"></span>';
+            
+            fetch("{{ webapp_url }}/random-word", {
+                headers: {
+                    "X-Auth": Telegram.WebApp.initData
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.word) {
+                    display.textContent = data.word;
+                    // Vibrate on success (if supported)
+                    if (Telegram.WebApp.HapticFeedback) {
+                        Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                    }
+                } else {
+                    display.textContent = "Error: " + (data.error || "Unknown error");
+                }
+            })
+            .catch(error => {
+                display.textContent = "Error loading word";
+                console.error("Error:", error);
+            })
+            .finally(() => {
+                btn.disabled = false;
+            });
+        }
+
+        function getRandomSentence() {
+            if (!isAuthenticated) return;
+            
+            const btn = document.getElementById("randomSentenceBtn");
+            const display = document.getElementById("sentenceDisplay");
+            
+            btn.disabled = true;
+            display.innerHTML = '<span class="loading"></span>';
+            
+            fetch("{{ webapp_url }}/random-sentence", {
+                headers: {
+                    "X-Auth": Telegram.WebApp.initData
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sentence) {
+                    display.textContent = data.sentence;
+                    // Vibrate on success (if supported)
+                    if (Telegram.WebApp.HapticFeedback) {
+                        Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                    }
+                } else {
+                    display.textContent = "Error: " + (data.error || "Unknown error");
+                }
+            })
+            .catch(error => {
+                display.textContent = "Error loading sentence";
+                console.error("Error:", error);
+            })
+            .finally(() => {
+                btn.disabled = false;
+            });
+        }
+
+        // Optional: Allow closing the WebApp
+        Telegram.WebApp.MainButton.setText("Close");
+        Telegram.WebApp.MainButton.onClick(() => {
+            Telegram.WebApp.close();
+        });
+    </script>
 </body>
 </html>
