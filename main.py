@@ -258,7 +258,7 @@ def main():
         logger.info("🌐 Starting Flask web server on port 8080...")
         app.run(
             host='0.0.0.0',
-            port=8080,
+            port=8099,
             debug=False,
             use_reloader=False
         )
