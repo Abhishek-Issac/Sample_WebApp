@@ -1,146 +1,115 @@
-# Word Magic Telegram Web App Bot ✨
+# Telegram Web App Greeting Bot 👋
 
-A beautiful and interactive Telegram Web App bot built with Python that generates random words and inspirational sentences from a customizable word list.
+A simple Telegram Web App bot that greets users with **"Hi {first_name}"** when they open the WebApp.
 
 ## Features
 
-- 🎨 **Modern UI Design** - Gradient backgrounds, smooth animations, and glass-morphism effects
-- 👤 **User Authentication** - Secure validation of Telegram WebApp data
-- 🎲 **Random Word Generator** - Pick random words from a curated list
-- 💬 **Magic Sentences** - Generate personalized inspirational messages
-- 📱 **Responsive Design** - Works seamlessly on all devices
-- ✨ **Haptic Feedback** - Interactive vibrations for better UX (on supported devices)
+- 👤 **Personalized Greeting** - Shows the user's Telegram first name
+- 🔐 **Secure Validation** - HMAC verification of Telegram WebApp data
+- 📱 **Responsive UI** - Clean, mobile-friendly layout
 
 ## Project Structure
 
 ```
 .
-├── main.py                 # Main Flask application with bot handlers
+├── main.py                 # Flask app + Telegram bot handlers
 ├── validation.py           # Telegram WebApp data validation
-├── words.txt              # Word list for random generation
 ├── requirements.txt        # Python dependencies
 ├── templates/
-│   └── index.html         # Web app frontend with beautiful UI
-├── .gitignore             # Git ignore file
-└── README.md              # This file
+│   └── index.html          # Web app frontend
+├── .gitignore
+└── README.md
 ```
 
 ## Setup Instructions
 
-### Prerequisites
+### 1) Create a Telegram Bot
 
-- Python 3.8 or higher
-- A Telegram Bot Token (get one from [@BotFather](https://t.me/botfather))
-- A publicly accessible URL for hosting (e.g., Render, Railway, Heroku, or ngrok for local testing)
+1. Open [@BotFather](https://t.me/botfather) in Telegram.
+2. Run `/newbot` and follow the prompts to get a **bot token**.
 
-### Environment Variables
+### 2) Host the Web App
 
-Set the following environment variables:
+You need a public HTTPS URL (Render, Railway, Heroku, or ngrok for local testing).
+
+### 3) Configure Environment Variables
 
 ```bash
-TOKEN=your_telegram_bot_token
-URL=https://your-app-url.com
-WEBHOOK_SECRET=your_secure_random_string
+export TOKEN=your_telegram_bot_token
+export URL=https://your-public-url.com
+export WEBHOOK_SECRET=your_random_secret
+export PORT=8099
 ```
 
-### Installation
+### 4) Install Dependencies
 
-1. **Clone or download this repository**
-
-2. **Install dependencies:**
 ```bash
 pip install -r requirements.txt
 ```
 
-3. **Customize the word list:**
-Edit `words.txt` to add your own words (one word per line)
+### 5) Run the Bot
 
-4. **Run the application:**
 ```bash
 python main.py
 ```
 
-The bot will automatically:
-- Initialize the Telegram bot
-- Set up webhooks
-- Start the Flask web server on port 8080
+The bot will:
+- Start Flask on port `${PORT}` (defaults to `8080` if not set)
+- Set the Telegram webhook automatically
+- Serve the WebApp UI at `/`
 
-## How to Use
+### 6) Test in Telegram
 
-1. **Start the bot** - Send `/start` to your bot on Telegram
-2. **Open Web App** - Click the "🚀 Open Web App" button
-3. **Explore features:**
-   - View your Telegram user information
-   - Generate random words from the word list
-   - Create personalized inspirational sentences
-   - Enjoy the smooth animations and beautiful UI
+1. Open your bot and send `/start`.
+2. Tap **"🚀 Open Web App"**.
+3. You should see **"Hi {first_name}"** inside the WebApp.
 
 ## API Endpoints
 
-- `GET /` - Main web app page
-- `GET /validate` - Validate Telegram WebApp authentication
-- `GET /random-word` - Get a random word from the word list
-- `GET /random-sentence` - Generate a random personalized sentence
-- `POST /bots/{TOKEN}` - Webhook endpoint for Telegram updates
+- `GET /` - WebApp UI
+- `GET /validate` - Validate Telegram WebApp auth
+- `POST /webhook/{TOKEN}` - Telegram webhook
 
 ## Customization
 
-### Adding More Words
+- Edit `templates/index.html` to change the greeting text or styling.
+- Update `main.py` if you want to add more bot commands.
 
-Edit `words.txt` and add one word per line:
+## Quick Start on a Linux Server (Port 8099)
+
+> Replace `your-public-url.com` with your actual HTTPS domain that points to your server.
+
+```bash
+sudo apt-get update
+sudo apt-get install -y python3 python3-venv python3-pip git
+
+git clone https://your-repo-url.com/Sample_WebApp.git
+cd Sample_WebApp
+
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+export TOKEN=your_telegram_bot_token
+export URL=https://your-public-url.com
+export WEBHOOK_SECRET=your_random_secret
+export PORT=8099
+
+python main.py
 ```
-amazing
-wonderful
-fantastic
-...
+
+If you need the process to keep running after you close SSH, start it with:
+
+```bash
+nohup python main.py > webapp.log 2>&1 &
 ```
 
-### Modifying Sentence Templates
+Make sure your firewall allows port `8099`:
 
-In `main.py`, edit the `templates` list in the `/random-sentence` endpoint:
-```python
-templates = [
-    f"You are truly {random.choice(WORD_LIST)}, {user_data['first_name']}!",
-    # Add your own templates here
-]
+```bash
+sudo ufw allow 8099
 ```
-
-### Styling the UI
-
-Edit `templates/index.html` to customize:
-- Colors and gradients
-- Animations
-- Layout
-- Font styles
-
-## Security Features
-
-- ✅ HMAC-SHA256 validation of WebApp data
-- ✅ Webhook secret token verification
-- ✅ Secure authentication for all API endpoints
-- ✅ No sensitive data exposure
-
-## Technologies Used
-
-- **Backend:** Python, Flask, python-telegram-bot
-- **Frontend:** HTML5, CSS3, JavaScript
-- **Authentication:** Telegram WebApp API with HMAC validation
-- **Styling:** Modern CSS with gradients, animations, and glassmorphism
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0 - see the LICENSE file for details.
-
-## Contributing
-
-Feel free to submit issues, fork the repository, and create pull requests for any improvements.
-
-## Acknowledgments
-
-- Built with [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot)
-- Inspired by modern web design trends
-- Telegram WebApp API documentation
-
----
-
-Made with ❤️ for the Telegram community
+GNU GPLv3 - see the LICENSE file for details.

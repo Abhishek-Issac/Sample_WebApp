@@ -35,6 +35,7 @@ if not WEBAPP_URL:
     raise ValueError("❌ URL environment variable is required")
 
 WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET", "default_secret_change_me")
+PORT = int(os.getenv("PORT", "8080"))
 
 # Load word list
 def load_words():
@@ -255,10 +256,10 @@ def main():
         setup_bot()
         
         # Start Flask server
-        logger.info("🌐 Starting Flask web server on port 8080...")
+        logger.info(f"🌐 Starting Flask web server on port {PORT}...")
         app.run(
             host='0.0.0.0',
-            port=8080,
+            port=PORT,
             debug=False,
             use_reloader=False
         )

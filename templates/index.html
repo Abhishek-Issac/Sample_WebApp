@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Magic ✨</title>
+    <title>Telegram Web App Greeting</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -24,387 +24,175 @@
         }
 
         .container {
-            max-width: 500px;
+            max-width: 520px;
             width: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 10px 35px rgba(31, 38, 135, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .header {
             text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin-bottom: 28px;
         }
 
         .header .emoji {
-            font-size: 3em;
-            display: block;
-            margin-bottom: 15px;
+            font-size: 3rem;
+            display: inline-block;
+            margin-bottom: 12px;
             animation: float 3s ease-in-out infinite;
         }
 
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            opacity: 0.85;
+        }
+
         @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
         }
 
-        .user-card {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 25px;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .user-card h2 {
-            font-size: 1.5em;
-            margin-bottom: 10px;
-            color: #fff;
-        }
-
-        .user-info {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            font-size: 1.1em;
-        }
-
-        .user-info-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .user-info-item .icon {
-            font-size: 1.2em;
-        }
-
-        .status {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 25px;
+        .greeting {
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 18px;
+            padding: 24px;
             text-align: center;
+            font-size: 1.6rem;
             font-weight: 600;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .status.success {
-            background: rgba(72, 187, 120, 0.3);
-            border-color: rgba(72, 187, 120, 0.5);
-        }
-
-        .status.loading {
-            background: rgba(237, 137, 54, 0.3);
-            border-color: rgba(237, 137, 54, 0.5);
-        }
-
-        .word-section {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 15px;
-            padding: 25px;
             margin-bottom: 20px;
-            text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.25);
         }
 
-        .word-display {
-            font-size: 2em;
-            font-weight: bold;
-            margin: 20px 0;
-            min-height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-transform: capitalize;
-            animation: fadeIn 0.5s ease-in;
+        .greeting span {
+            color: #ffecd2;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .sentence-display {
-            font-size: 1.3em;
-            line-height: 1.6;
-            margin: 20px 0;
-            min-height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .status {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            padding: 14px 16px;
             text-align: center;
-            animation: slideIn 0.5s ease-out;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 18px;
         }
 
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .status.success {
+            background: rgba(72, 187, 120, 0.25);
+            border-color: rgba(72, 187, 120, 0.4);
         }
 
-        .button {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.1em;
-            font-weight: 600;
-            border-radius: 50px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        .status.warning {
+            background: rgba(237, 137, 54, 0.25);
+            border-color: rgba(237, 137, 54, 0.4);
         }
 
-        .button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.6);
+        .card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .button:active {
-            transform: translateY(0);
+        .card h2 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
         }
 
-        .button.secondary {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
-        }
-
-        .button.secondary:hover {
-            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
-        }
-
-        .button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
+        .card ul {
+            list-style: none;
+            display: grid;
+            gap: 8px;
+            font-size: 0.95rem;
         }
 
         .footer {
             text-align: center;
-            margin-top: 25px;
-            opacity: 0.8;
-            font-size: 0.9em;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .greeting {
-            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-            color: #333;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 25px;
-            text-align: center;
-            font-size: 1.2em;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(252, 182, 159, 0.4);
+            margin-top: 22px;
+            font-size: 0.85rem;
+            opacity: 0.75;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <span class="emoji">✨</span>
-            <h1>Word Magic</h1>
+            <span class="emoji">👋</span>
+            <h1>Telegram WebApp</h1>
+            <p>Open the bot and tap the WebApp button to see your greeting.</p>
         </div>
 
-        <div id="greeting" class="greeting" style="display: none;">
-            Hello, <span id="greetingName"></span>! 👋
+        <div class="greeting">
+            Hi <span id="greetingName">friend</span>!
         </div>
 
-        <div class="user-card">
-            <h2>📋 Your Info</h2>
-            <div class="user-info">
-                <div class="user-info-item">
-                    <span class="icon">👤</span>
-                    <span id="userName">Loading...</span>
-                </div>
-                <div class="user-info-item">
-                    <span class="icon">🔢</span>
-                    <span>ID: <span id="userId">...</span></span>
-                </div>
-                <div class="user-info-item" id="usernameItem" style="display: none;">
-                    <span class="icon">@</span>
-                    <span id="userUsername">...</span>
-                </div>
-            </div>
+        <div id="status" class="status warning">
+            Waiting for Telegram WebApp context...
         </div>
 
-        <div id="status" class="status loading">
-            <span class="loading"></span> Validating...
-        </div>
-
-        <div class="word-section">
-            <h3>🎲 Random Word</h3>
-            <div id="wordDisplay" class="word-display">Click the button below!</div>
-            <button id="randomWordBtn" class="button" onclick="getRandomWord()" disabled>
-                Generate Word
-            </button>
-        </div>
-
-        <div class="word-section">
-            <h3>💬 Magic Sentence</h3>
-            <div id="sentenceDisplay" class="sentence-display">Get inspired!</div>
-            <button id="randomSentenceBtn" class="button secondary" onclick="getRandomSentence()" disabled>
-                Generate Sentence
-            </button>
+        <div class="card">
+            <h2>What this demo does</h2>
+            <ul>
+                <li>✅ Reads your Telegram first name securely.</li>
+                <li>✅ Shows a friendly greeting when opened.</li>
+                <li>✅ Confirms authentication status below.</li>
+            </ul>
         </div>
 
         <div class="footer">
-            Made with ❤️ using Telegram Web Apps
+            Made for Telegram Web Apps ✨
         </div>
     </div>
 
     <script>
-        let isAuthenticated = false;
-        
-        // Initialize Telegram WebApp
-        Telegram.WebApp.ready();
-        Telegram.WebApp.expand();
+        const statusEl = document.getElementById("status");
+        const greetingNameEl = document.getElementById("greetingName");
 
-        // Set theme colors
-        const themeParams = Telegram.WebApp.themeParams;
-        
-        // Display user info from Telegram (unsafe - just for display)
-        const user = Telegram.WebApp.initDataUnsafe.user;
-        if (user) {
-            document.getElementById("userName").textContent = user.first_name + (user.last_name ? ' ' + user.last_name : '');
-            document.getElementById("userId").textContent = user.id;
-            document.getElementById("greetingName").textContent = user.first_name;
-            document.getElementById("greeting").style.display = "block";
-            
-            if (user.username) {
-                document.getElementById("userUsername").textContent = '@' + user.username;
-                document.getElementById("usernameItem").style.display = "flex";
-            }
+        const telegram = window.Telegram?.WebApp;
+        const initData = telegram?.initData || "";
+        const user = telegram?.initDataUnsafe?.user;
+
+        if (telegram) {
+            telegram.ready();
+            telegram.expand();
         }
 
-        // Validate with backend
-        fetch("{{ webapp_url }}/validate", {
-            headers: {
-                "X-Auth": Telegram.WebApp.initData
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                isAuthenticated = true;
-                document.getElementById("status").textContent = "✅ Authenticated Successfully!";
-                document.getElementById("status").classList.remove("loading");
-                document.getElementById("status").classList.add("success");
-                
-                // Enable buttons
-                document.getElementById("randomWordBtn").disabled = false;
-                document.getElementById("randomSentenceBtn").disabled = false;
-            } else {
-                throw new Error(data.error || "Authentication failed");
-            }
-        })
-        .catch(error => {
-            document.getElementById("status").textContent = "❌ Authentication failed: " + error.message;
-            document.getElementById("status").classList.remove("loading");
-            console.error("Validation error:", error);
-        });
+        if (user?.first_name) {
+            greetingNameEl.textContent = user.first_name;
+        }
 
-        function getRandomWord() {
-            if (!isAuthenticated) return;
-            
-            const btn = document.getElementById("randomWordBtn");
-            const display = document.getElementById("wordDisplay");
-            
-            btn.disabled = true;
-            display.innerHTML = '<span class="loading"></span>';
-            
-            fetch("{{ webapp_url }}/random-word", {
+        if (!telegram) {
+            statusEl.textContent = "Open this page from a Telegram WebApp to see your live data.";
+        } else {
+            fetch("{{ webapp_url }}/validate", {
                 headers: {
-                    "X-Auth": Telegram.WebApp.initData
+                    "X-Auth": initData
                 }
             })
             .then(response => response.json())
             .then(data => {
-                if (data.word) {
-                    display.textContent = data.word;
-                    // Vibrate on success (if supported)
-                    if (Telegram.WebApp.HapticFeedback) {
-                        Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-                    }
+                if (data.success) {
+                    statusEl.textContent = `Authenticated as ${data.user.first_name}.`;
+                    statusEl.classList.remove("warning");
+                    statusEl.classList.add("success");
                 } else {
-                    display.textContent = "Error: " + (data.error || "Unknown error");
+                    throw new Error(data.error || "Authentication failed");
                 }
             })
             .catch(error => {
-                display.textContent = "Error loading word";
-                console.error("Error:", error);
-            })
-            .finally(() => {
-                btn.disabled = false;
+                statusEl.textContent = `Authentication failed: ${error.message}`;
+                statusEl.classList.remove("success");
+                statusEl.classList.add("warning");
             });
         }
-
-        function getRandomSentence() {
-            if (!isAuthenticated) return;
-            
-            const btn = document.getElementById("randomSentenceBtn");
-            const display = document.getElementById("sentenceDisplay");
-            
-            btn.disabled = true;
-            display.innerHTML = '<span class="loading"></span>';
-            
-            fetch("{{ webapp_url }}/random-sentence", {
-                headers: {
-                    "X-Auth": Telegram.WebApp.initData
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.sentence) {
-                    display.textContent = data.sentence;
-                    // Vibrate on success (if supported)
-                    if (Telegram.WebApp.HapticFeedback) {
-                        Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-                    }
-                } else {
-                    display.textContent = "Error: " + (data.error || "Unknown error");
-                }
-            })
-            .catch(error => {
-                display.textContent = "Error loading sentence";
-                console.error("Error:", error);
-            })
-            .finally(() => {
-                btn.disabled = false;
-            });
-        }
-
-        // Optional: Allow closing the WebApp
-        Telegram.WebApp.MainButton.setText("Close");
-        Telegram.WebApp.MainButton.onClick(() => {
-            Telegram.WebApp.close();
-        });
     </script>
 </body>
 </html>
