@@ -38,7 +38,6 @@ You need a public HTTPS URL (Render, Railway, Heroku, or ngrok for local testing
 export TOKEN=your_telegram_bot_token
 export URL=https://your-public-url.com
 export WEBHOOK_SECRET=your_random_secret
-export PORT=8099
 ```
 
 ### 4) Install Dependencies
@@ -54,7 +53,7 @@ python main.py
 ```
 
 The bot will:
-- Start Flask on port `${PORT}` (defaults to `8080` if not set)
+- Start Flask on port `8080`
 - Set the Telegram webhook automatically
 - Serve the WebApp UI at `/`
 
