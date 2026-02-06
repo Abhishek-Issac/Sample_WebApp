@@ -74,6 +74,41 @@ The bot will:
 - Edit `templates/index.html` to change the greeting text or styling.
 - Update `main.py` if you want to add more bot commands.
 
+## Quick Start on a Linux Server (Port 8099)
+
+> Replace `your-public-url.com` with your actual HTTPS domain that points to your server.
+
+```bash
+sudo apt-get update
+sudo apt-get install -y python3 python3-venv python3-pip git
+
+git clone https://your-repo-url.com/Sample_WebApp.git
+cd Sample_WebApp
+
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+export TOKEN=your_telegram_bot_token
+export URL=https://your-public-url.com
+export WEBHOOK_SECRET=your_random_secret
+export PORT=8099
+
+python main.py
+```
+
+If you need the process to keep running after you close SSH, start it with:
+
+```bash
+nohup python main.py > webapp.log 2>&1 &
+```
+
+Make sure your firewall allows port `8099`:
+
+```bash
+sudo ufw allow 8099
+```
+
 ## License
 
 GNU GPLv3 - see the LICENSE file for details.
